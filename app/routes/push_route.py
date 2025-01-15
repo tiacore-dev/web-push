@@ -1,30 +1,11 @@
 import logging
 import json
 from datetime import datetime
-import os
-from dotenv import load_dotenv
-from flask import Flask, request, jsonify
-from apscheduler.schedulers.background import BackgroundScheduler
+from flask import Blueprint, request, jsonify
 from pywebpush import webpush, WebPushException
+from app.scheduler import scheduler
 
-load_dotenv()
-
-flask_port = os.getenv('FLASK_PORT')
-
-app = Flask(__name__)
-scheduler = BackgroundScheduler()
-scheduler.start()
-
-
-# Настройка логирования
-logging.basicConfig(
-    level=logging.INFO,  # Уровень логирования
-    format='%(asctime)s - %(levelname)s - %(message)s',  # Формат сообщений
-    handlers=[
-        logging.FileHandler("app.log", mode="a"),  # Запись в файл
-        logging.StreamHandler()  # Вывод в консоль
-    ]
-)
+push_bp = Blueprint('push', __name__)
 
 
 def send_push_notification(subscription, message, private_key):
@@ -44,7 +25,7 @@ def send_push_notification(subscription, message, private_key):
                       subscription['endpoint']}: {str(ex)}""")
 
 
-@app.route('/schedule_notification', methods=['POST'])
+@push_bp.route('/schedule_notification', methods=['POST'])
 def schedule_notification():
     """Эндпоинт для планирования push-уведомлений."""
     data = request.json
@@ -86,8 +67,3 @@ def schedule_notification():
         return jsonify({"error": "Failed to schedule notification"}), 500
 
     return jsonify({"message": "Notification scheduled successfully!"}), 200
-
-
-if __name__ == '__main__':
-    logging.info("Starting Flask application...")
-    app.run(debug=True, port=flask_port)
