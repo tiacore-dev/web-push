@@ -1,8 +1,8 @@
-from datetime import datetime
-import json
 import logging
-from apscheduler.schedulers.background import BackgroundScheduler
+import json
 from flask import Flask, request, jsonify
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
 from pywebpush import webpush, WebPushException
 
 app = Flask(__name__)
@@ -10,8 +10,18 @@ scheduler = BackgroundScheduler()
 scheduler.start()
 
 # Настройка логирования
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler()]
+)
+
+if not app.debug:
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
+
+logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 
 
 def send_push_notification(subscription, message, private_key):
@@ -35,33 +45,30 @@ def send_push_notification(subscription, message, private_key):
 def schedule_notification():
     """Эндпоинт для планирования push-уведомлений."""
     data = request.json
-    logging.info(f"Received request data: {data}")
+    app.logger.info(f"Received request data: {data}")
 
     subscription = data.get('subscription')
     message = data.get('message', 'Default Notification Message')
     private_key = data.get('private_key')
-    # Ожидается ISO-формат: 'YYYY-MM-DDTHH:MM:SS'
     notification_time = data.get('date')
 
     if not (subscription and message and private_key):
-        logging.warning("Missing required parameters")
+        app.logger.warning("Missing required parameters")
         return jsonify({"error": "Missing required parameters"}), 400
 
-    # Если дата не указана, используем текущее время
     if not notification_time:
         notification_time = datetime.now()
-        logging.info(f"""No notification time provided. Using current time: {
-                     notification_time}""")
+        app.logger.info(f"""No notification time provided. Using current time: {
+                        notification_time}""")
     else:
         try:
             notification_time = datetime.fromisoformat(notification_time)
-            logging.info(f"""Notification time parsed successfully: {
-                         notification_time}""")
+            app.logger.info(f"""Notification time parsed successfully: {
+                            notification_time}""")
         except ValueError:
-            logging.error(f"Invalid date format: {notification_time}")
+            app.logger.error(f"Invalid date format: {notification_time}")
             return jsonify({"error": "Invalid date format. Use ISO format: YYYY-MM-DDTHH:MM:SS"}), 400
 
-    # Планирование задачи
     try:
         scheduler.add_job(
             func=send_push_notification,
@@ -69,14 +76,15 @@ def schedule_notification():
             run_date=notification_time,
             args=[subscription, message, private_key]
         )
-        logging.info(f"""Notification scheduled successfully for {
-                     notification_time}""")
+        app.logger.info(f"""Notification scheduled successfully for {
+                        notification_time}""")
     except Exception as e:
-        logging.error(f"Failed to schedule notification: {str(e)}")
+        app.logger.error(f"Failed to schedule notification: {str(e)}")
         return jsonify({"error": "Failed to schedule notification"}), 500
 
     return jsonify({"message": "Notification scheduled successfully!"}), 200
 
 
 if __name__ == '__main__':
+    app.logger.info("Starting Flask application...")
     app.run(debug=True, port=5010)
