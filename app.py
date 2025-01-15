@@ -1,8 +1,8 @@
 import logging
 import json
+from datetime import datetime
 from flask import Flask, request, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
-from datetime import datetime
 from pywebpush import webpush, WebPushException
 
 app = Flask(__name__)
@@ -20,6 +20,11 @@ if not app.debug:
     gunicorn_logger = logging.getLogger('gunicorn.error')
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
+
+    # Дополнительный обработчик для stdout (временная проверка)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(logging.DEBUG)
+    app.logger.addHandler(stream_handler)
 
 logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 
