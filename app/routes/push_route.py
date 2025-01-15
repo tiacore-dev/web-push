@@ -32,7 +32,8 @@ def schedule_notification():
     logging.info(f"Received request data: {data}")
 
     subscription = data.get('subscription')
-    message = data.get('message', 'Default Notification Message')
+    message_data = data.get('data', 'Default Notification Message')
+    message = message_data.get('text')
     private_key = data.get('private_key')
     notification_time = data.get('date')
 
