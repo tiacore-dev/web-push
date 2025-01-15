@@ -90,6 +90,6 @@ def schedule_notification():
     return jsonify({"message": "Notification scheduled successfully!"}), 200
 
 
-if __name__ == '__main__':
+"""if __name__ == '__main__':
     app.logger.info("Starting Flask application...")
-    app.run(debug=True, port=5010)
+    app.run(debug=True, port=5010)"""
