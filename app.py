@@ -9,7 +9,6 @@ app = Flask(__name__)
 scheduler = BackgroundScheduler()
 scheduler.start()
 
-logging.info("Приложение запущено")
 
 # Настройка логирования
 logging.basicConfig(
@@ -81,3 +80,8 @@ def schedule_notification():
         return jsonify({"error": "Failed to schedule notification"}), 500
 
     return jsonify({"message": "Notification scheduled successfully!"}), 200
+
+
+if __name__ == '__main__':
+    logging.info("Starting Flask application...")
+    app.run(debug=True, port=5010)

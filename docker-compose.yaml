@@ -6,7 +6,8 @@ services:
 
     ports:
       - "${FLASK_PORT}:${FLASK_PORT}"
-    command: gunicorn -c gunicorn.conf.py -w 1 app:app
+    #command: gunicorn -c gunicorn.conf.py -w 1 app:app
+    command: python app.py
     networks:
       - push_network
 
