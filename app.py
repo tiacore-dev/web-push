@@ -1,9 +1,15 @@
 import logging
 import json
 from datetime import datetime
+import os
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 from pywebpush import webpush, WebPushException
+
+load_dotenv()
+
+flask_port = os.getenv('FLASK_PORT')
 
 app = Flask(__name__)
 scheduler = BackgroundScheduler()
@@ -84,4 +90,4 @@ def schedule_notification():
 
 if __name__ == '__main__':
     logging.info("Starting Flask application...")
-    app.run(debug=True, port=5010)
+    app.run(debug=True, port=flask_port)
