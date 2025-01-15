@@ -1,22 +1,29 @@
 import logging
 import json
+import os
 from datetime import datetime
+from dotenv import load_dotenv
 from flask import Blueprint, request, jsonify
 from pywebpush import webpush, WebPushException
 from app.scheduler import scheduler
 
 push_bp = Blueprint('push', __name__)
 
+load_dotenv()
 
-def send_push_notification(subscription, message, private_key):
+URL = os.getenv('URL')
+PRIVATE_KEY = os.getenv('PRIVATE_KEY')
+
+
+def send_push_notification(subscription, message):
     """Отправка push-уведомления."""
     try:
         webpush(
             subscription_info=subscription,
             data=json.dumps(
                 {"title": "Scheduled Notification", "body": message}),
-            vapid_private_key=private_key,
-            vapid_claims={"sub": "mailto:your_email@example.com"}
+            vapid_private_key=PRIVATE_KEY,
+            vapid_claims={"sub": URL}
         )
         logging.info(f"""Notification sent successfully to {
                      subscription['endpoint']}""")
@@ -34,10 +41,9 @@ def schedule_notification():
     subscription = data.get('subscription')
     message_data = data.get('data', 'Default Notification Message')
     message = message_data.get('text')
-    private_key = data.get('private_key')
     notification_time = data.get('date')
 
-    if not (subscription and message and private_key):
+    if not (subscription and message):
         logging.warning("Missing required parameters")
         return jsonify({"error": "Missing required parameters"}), 400
 
@@ -59,7 +65,7 @@ def schedule_notification():
             func=send_push_notification,
             trigger="date",
             run_date=notification_time,
-            args=[subscription, message, private_key]
+            args=[subscription, message]
         )
         logging.info(f"""Notification scheduled successfully for {
             notification_time}""")
