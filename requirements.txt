@@ -1,0 +1,4 @@
+cryptography==44.0.0
+pywebpush==2.0.3
+Flask==3.0.3
+APScheduler==3.11.0
