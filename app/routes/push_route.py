@@ -44,56 +44,52 @@ def schedule_notification():
     logging.info(f"Received request data: {data}")
 
     subscription = data.get('subscription')
-    message_data = data.get('data', 'Default Notification Message')
+    message_data = data.get('data', {'text': 'Default Notification Message'})
     message = message_data.get('text')
     notification_time = data.get('date')
-    if isinstance(notification_time, str):
-        try:
-            # Парсинг даты и времени с клиентской стороны
-            notification_time = datetime.fromisoformat(notification_time)
-            notification_time = novosibirsk_tz.localize(
-                notification_time)  # Привязка к Новосибирскому времени
-            logging.info(f"""Notification time in Novosibirsk timezone: {
-                notification_time}""")
-
-            # Преобразование в Московское время
-            notification_time = notification_time.astimezone(moscow_tz)
-            logging.info(f"""Converted notification time to Moscow timezone: {
-                notification_time}""")
-        except ValueError:
-            logging.error(f"Invalid date format: {notification_time}")
-            return jsonify({"error": "Invalid date format. Use ISO format: YYYY-MM-DDTHH:MM:SS"}), 400
 
     if not (subscription and message):
         logging.warning("Missing required parameters")
         return jsonify({"error": "Missing required parameters"}), 400
 
     if not notification_time:
+        logging.info("No notification time provided. Using current time.")
         notification_time = datetime.now()
-        logging.info(f"""No notification time provided. Using current time: {
-                     notification_time}""")
-    else:
+    elif isinstance(notification_time, str):
         try:
+            # Преобразование строки ISO 8601 в datetime
             notification_time = datetime.fromisoformat(notification_time)
-            logging.info(f"""Notification time parsed successfully: {
+
+            # Установка Новосибирского времени
+            notification_time = novosibirsk_tz.localize(notification_time)
+            logging.info(f"""Notification time in Novosibirsk timezone: {
+                         notification_time}""")
+
+            # Конвертация в Московское время
+            notification_time = notification_time.astimezone(moscow_tz)
+            logging.info(f"""Converted notification time to Moscow timezone: {
                          notification_time}""")
         except ValueError:
             logging.error(f"Invalid date format: {notification_time}")
             return jsonify({"error": "Invalid date format. Use ISO format: YYYY-MM-DDTHH:MM:SS"}), 400
+    else:
+        logging.error(f"""Invalid type for notification_time: {
+                      type(notification_time)}""")
+        return jsonify({"error": "Invalid notification_time format. Must be ISO string"}), 400
 
-    # Проверка времени уведомления
-    current_time = datetime.now()
+    # Проверка: отправить уведомление сразу, если время в прошлом
+    current_time = datetime.now(moscow_tz)
     if notification_time < current_time:
-        logging.info(f"""Notification time {
-                     notification_time} is in the past. Sending push notification immediately.""")
+        logging.info(
+            "Notification time is in the past. Sending push notification immediately.")
         try:
             send_push_notification(subscription, message)
-            logging.info("Push notification sent successfully.")
             return jsonify({"message": "Notification sent immediately as the scheduled time was in the past."}), 200
         except Exception as e:
             logging.error(f"Failed to send immediate notification: {str(e)}")
             return jsonify({"error": "Failed to send immediate notification"}), 500
 
+    # Планирование задачи
     try:
         scheduler.add_job(
             func=send_push_notification,
