@@ -25,10 +25,13 @@ PRIVATE_KEY = os.getenv('PRIVATE_KEY')
 def send_push_notification(subscription, message):
     """Отправка push-уведомления."""
     try:
+        data = json.dumps(
+            {"title": "Scheduled Notification", "body": message})
+        logger.info(f"Полученные данные: {data}")
+
         webpush(
             subscription_info=subscription,
-            data=json.dumps(
-                {"title": "Scheduled Notification", "body": message}),
+            data=data,
             vapid_private_key=PRIVATE_KEY,
             vapid_claims={"sub": URL}
         )
@@ -39,7 +42,7 @@ def send_push_notification(subscription, message):
             subscription['endpoint']}: {str(ex)}""")
 
 
-@push_bp.route('/schedule_notification', methods=['POST'])
+@ push_bp.route('/schedule_notification', methods=['POST'])
 def schedule_notification():
     """Эндпоинт для планирования push-уведомлений."""
     data = request.json
