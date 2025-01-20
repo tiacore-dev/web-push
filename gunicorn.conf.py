@@ -2,7 +2,7 @@ import os
 import logging
 
 from dotenv import load_dotenv
-from app.scheduler import scheduler, add_test
+from app.scheduler import scheduler
 
 load_dotenv()
 
@@ -30,7 +30,7 @@ def on_starting(server):
     logging.info("Starting Gunicorn, initializing scheduler...")
     scheduler.start()
     logging.info("Scheduler started.")
-    add_test()
+
 
 # Логирование событий после запуска воркеров
 

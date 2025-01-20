@@ -1,7 +1,6 @@
 import logging
 import os
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
 from pytz import timezone
 # from pytz import timezone
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
@@ -23,20 +22,6 @@ jobstores = {
 scheduler = BackgroundScheduler(
     jobstores=jobstores, timezone=timezone("Europe/Moscow"))
 # jobstores=jobstores)
-
-
-def test_schedule():
-    logger.info("Test job executed!")
-
-
-def add_test():        # Добавление тестовой задачи
-    test_time = datetime.now(timezone("Europe/Moscow")) + timedelta(seconds=90)
-    scheduler.add_job(
-        func=test_schedule,
-        trigger="date",
-        run_date=test_time,
-    )
-    logger.info(f"Test job scheduled for {test_time}")
 
 
 def job_listener(event):
