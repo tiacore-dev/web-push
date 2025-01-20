@@ -51,7 +51,7 @@ def send_push_notification(subscription, message):
         logger.error(f"Неизвестная ошибка при отправке пуша: {str(e)}")
 
 
-@ push_bp.route('/schedule_notification', methods=['POST'])
+@push_bp.route('/schedule_notification', methods=['POST'])
 def schedule_notification():
     """Эндпоинт для планирования push-уведомлений."""
     data = request.json
@@ -119,7 +119,12 @@ def schedule_notification():
             func=send_push_notification,
             trigger="date",
             run_date=notification_time,
-            args=[subscription, message]
+            args=[subscription, message],
+            id=f"push-{subscription['endpoint']
+                       }-{notification_time.isoformat()}",
+            replace_existing=True,  # Заменяет задачу, если она уже существует
+            misfire_grace_time=300,  # Обработка пропущенных задач
+            max_instances=5,  # Позволяет запускать до 5 экземпляров задачи одновременно
         )
         logger.info(f"""Notification scheduled successfully for {
             notification_time}""")
