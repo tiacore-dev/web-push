@@ -5,7 +5,7 @@ from app.routes import register_routes
 
 # Настройка логирования
 logging.basicConfig(
-    level=logging.INFO,  # Уровень логирования
+    level=logging.DEBUG,  # Уровень логирования
     format='%(asctime)s - %(levelname)s - %(message)s',  # Формат сообщений
     handlers=[
         logging.FileHandler("app.log", mode="a"),  # Запись в файл
