@@ -47,22 +47,22 @@ def schedule_notification():
     message_data = data.get('data', 'Default Notification Message')
     message = message_data.get('text')
     notification_time = data.get('date')
+    if isinstance(notification_time, str):
+        try:
+            # Парсинг даты и времени с клиентской стороны
+            notification_time = datetime.fromisoformat(notification_time)
+            notification_time = novosibirsk_tz.localize(
+                notification_time)  # Привязка к Новосибирскому времени
+            logging.info(f"""Notification time in Novosibirsk timezone: {
+                notification_time}""")
 
-    try:
-        # Парсинг даты и времени с клиентской стороны
-        notification_time = datetime.fromisoformat(notification_time)
-        notification_time = novosibirsk_tz.localize(
-            notification_time)  # Привязка к Новосибирскому времени
-        logging.info(f"""Notification time in Novosibirsk timezone: {
-                     notification_time}""")
-
-        # Преобразование в Московское время
-        notification_time = notification_time.astimezone(moscow_tz)
-        logging.info(f"""Converted notification time to Moscow timezone: {
-                     notification_time}""")
-    except ValueError:
-        logging.error(f"Invalid date format: {notification_time}")
-        return jsonify({"error": "Invalid date format. Use ISO format: YYYY-MM-DDTHH:MM:SS"}), 400
+            # Преобразование в Московское время
+            notification_time = notification_time.astimezone(moscow_tz)
+            logging.info(f"""Converted notification time to Moscow timezone: {
+                notification_time}""")
+        except ValueError:
+            logging.error(f"Invalid date format: {notification_time}")
+            return jsonify({"error": "Invalid date format. Use ISO format: YYYY-MM-DDTHH:MM:SS"}), 400
 
     if not (subscription and message):
         logging.warning("Missing required parameters")
