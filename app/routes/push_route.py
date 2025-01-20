@@ -112,7 +112,7 @@ def schedule_notification():
     try:
         # Генерация уникального ID через хеширование
         job_id = uuid4()
-
+        logger.info(f"Полученный id: {job_id}")
         scheduler.add_job(
             func=send_push_notification,
             trigger="date",
