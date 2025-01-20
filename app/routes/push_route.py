@@ -79,25 +79,25 @@ def schedule_notification():
             # Установка Новосибирского времени
             notification_time = novosibirsk_tz.localize(notification_time)
             logger.info(f"""Notification time in Novosibirsk timezone: {
-                notification_time}""")
+                        notification_time}""")
 
-            # Конвертация в Московское время
-            notification_time = notification_time.astimezone(moscow_tz)
-            logger.info(f"""Converted notification time to Moscow timezone: {
-                notification_time}""")
+            # Конвертация в UTC
+            notification_time_utc = notification_time.astimezone(pytz.UTC)
+            logger.info(f"""Converted notification time to UTC: {
+                        notification_time_utc}""")
         except ValueError:
             logger.error(f"Invalid date format: {notification_time}")
             return jsonify({"error": "Invalid date format. Use ISO format: YYYY-MM-DDTHH:MM:SS"}), 400
     else:
         logger.error(f"""Invalid type for notification_time: {
-            type(notification_time)}""")
+                     type(notification_time)}""")
         return jsonify({"error": "Invalid notification_time format. Must be ISO string"}), 400
 
     # Проверка: отправить уведомление сразу, если время в прошлом
-    current_time = datetime.now(moscow_tz)
-    logging.info(f"Current Moscow time: {current_time}")
+    current_time_utc = datetime.now(pytz.UTC)
+    logging.info(f"Current UTC time: {current_time_utc}")
 
-    if notification_time < current_time:
+    if notification_time_utc < current_time_utc:
         logger.info(
             "Notification time is in the past. Sending push notification immediately.")
         try:
@@ -109,23 +109,21 @@ def schedule_notification():
 
     # Планирование задачи
     try:
-
         # Генерация уникального ID через хеширование
-        # Последние 10 символов
         short_endpoint = subscription['endpoint'][-10:]
-        job_id = f"push-{short_endpoint}-{notification_time.isoformat()}"
+        job_id = f"push-{short_endpoint}-{notification_time_utc.isoformat()}"
 
         scheduler.add_job(
             func=send_push_notification,
             trigger="date",
-            run_date=notification_time,
+            run_date=notification_time_utc,  # Используем UTC
             args=[subscription, message],
             id=job_id,
             replace_existing=True,  # Обновляет существующую задачу с тем же ID
             misfire_grace_time=300,
         )
         logger.info(f"""Notification scheduled successfully for {
-            notification_time}""")
+                    notification_time_utc}""")
     except Exception as e:
         logger.error(f"Failed to schedule notification: {str(e)}")
         return jsonify({"error": "Failed to schedule notification"}), 500
