@@ -21,6 +21,10 @@ scheduler = BackgroundScheduler(
     jobstores=jobstores)
 
 
+def test_schedule():
+    logging.info("Test job executed!")
+
+
 def job_listener(event):
     if event.exception:
         logging.error(f"Job {event.job_id} failed: {event.exception}")
@@ -28,6 +32,6 @@ def job_listener(event):
         logging.info(f"Job {event.job_id} executed successfully.")
 
 
-# scheduler.add_listener(job_listener, EVENT_JOB_ERROR | EVENT_JOB_EXECUTED)
+scheduler.add_listener(job_listener, EVENT_JOB_ERROR | EVENT_JOB_EXECUTED)
 
 logging.info("Scheduler initialized with PostgreSQL-backed JobStore")

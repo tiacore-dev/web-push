@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timedelta
 from pytz import timezone
 from dotenv import load_dotenv
-from app.scheduler import scheduler
+from app.scheduler import scheduler, test_schedule
 
 load_dotenv()
 
@@ -23,9 +23,6 @@ capture_output = True  # Перехватывать вывод stdout/stderr и�
 # Добавляем флаг для предзагрузки приложения
 preload_app = True
 
-
-def test_schedule():
-    logging.info("Test job executed!")
 
 # Запуск `scheduler` только в мастере
 
