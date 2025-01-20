@@ -27,7 +27,14 @@ def send_push_notification(subscription, message):
     """Отправка push-уведомления."""
     try:
         data = json.dumps(
-            {"title": "Scheduled Notification", "body": message}, ensure_ascii=False)
+            {
+                "notification": {
+                    "title": "Scheduled Notification",
+                    "body": message
+                }
+            },
+            ensure_ascii=False
+        )
         logger.info(f"Полученные данные: {data}")
 
         webpush(
