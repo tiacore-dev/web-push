@@ -18,7 +18,8 @@ jobstores = {
 
 scheduler = BackgroundScheduler(
     # jobstores=jobstores, timezone=timezone("Europe/Moscow"))
-    jobstores=jobstores)
+    # jobstores=jobstores
+)
 
 
 def job_listener(event):
