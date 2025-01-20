@@ -1,8 +1,9 @@
 import logging
 import os
 from dotenv import load_dotenv
-from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_MISSED
+from apscheduler.events import EVENT_ALL, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED
 from apscheduler.executors.pool import ThreadPoolExecutor
+from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -23,6 +24,13 @@ executors = {
     "default": ThreadPoolExecutor(10),
 }
 
+
+def debug_jobs():
+    jobs = scheduler.get_jobs()
+    for job in jobs:
+        logging.info(f"Job ID: {job.id}, Next run time: {job.next_run_time}")
+
+
 scheduler = BackgroundScheduler(
     jobstores=jobstores,
     executors=executors,
@@ -31,18 +39,29 @@ scheduler = BackgroundScheduler(
     },
 )
 
+scheduler.add_job(
+    debug_jobs,
+    trigger=IntervalTrigger(seconds=30),  # Проверка каждые 30 секунд
+)
 
-def job_listener(event):
-    if event.exception:
-        logging.error(f"Job {event.job_id} failed: {event.exception}")
+# Установим интервал проверки задач
+scheduler._jobstores["default"].max_interval = 5  # Проверять каждые 5 секунд
+
+
+def event_listener(event):
+    if event.code == EVENT_JOB_ADDED:
+        logger.info(f"Job {event.job_id} was added.")
+    elif event.code == EVENT_JOB_REMOVED:
+        logger.info(f"Job {event.job_id} was removed.")
+    elif event.code == EVENT_JOB_EXECUTED:
+        logger.info(f"Job {event.job_id} executed successfully.")
+    elif event.code == EVENT_JOB_ERROR:
+        logger.error(f"Job {event.job_id} failed with exception: {
+                     event.exception}")
     elif event.code == EVENT_JOB_MISSED:
-        logging.warning(f"Job {event.job_id} was missed.")
-    else:
-        logging.info(f"""Job {event.job_id} executed successfully at {
-                     event.scheduled_run_time}.""")
+        logger.warning(f"Job {event.job_id} was missed.")
 
 
-scheduler.add_listener(job_listener, EVENT_JOB_EXECUTED |
-                       EVENT_JOB_ERROR | EVENT_JOB_MISSED)
+scheduler.add_listener(event_listener, EVENT_ALL)
 
 logger.info("Scheduler initialized with PostgreSQL-backed JobStore")
