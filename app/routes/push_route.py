@@ -85,6 +85,8 @@ def schedule_notification():
 
     # Проверка: отправить уведомление сразу, если время в прошлом
     current_time = datetime.now(moscow_tz)
+    logging.info(f"Current Moscow time: {current_time}")
+
     if notification_time < current_time:
         logger.info(
             "Notification time is in the past. Sending push notification immediately.")
@@ -94,6 +96,13 @@ def schedule_notification():
         except Exception as e:
             logger.error(f"Failed to send immediate notification: {str(e)}")
             return jsonify({"error": "Failed to send immediate notification"}), 500
+
+    logger.info("Попытка вызвать отправку пуша")
+    try:
+        send_push_notification(subscription, message)
+        logger.info("Пуш отправлен успешно")
+    except Exception as e:
+        logger.error(f"Failed to send immediate notification: {str(e)}")
 
     # Планирование задачи
     try:
