@@ -1,12 +1,13 @@
-from pywebpush import WebPushException
+
 import logging
 import json
-import hashlib
+from uuid import uuid4
 import os
 from datetime import datetime
 import pytz
 from dotenv import load_dotenv
 from flask import Blueprint, request, jsonify
+
 from pywebpush import webpush, WebPushException
 from app.scheduler import scheduler
 
@@ -110,8 +111,7 @@ def schedule_notification():
     # Планирование задачи
     try:
         # Генерация уникального ID через хеширование
-        short_endpoint = subscription['endpoint'][-10:]
-        job_id = f"push-{short_endpoint}-{notification_time_utc.isoformat()}"
+        job_id = uuid4()
 
         scheduler.add_job(
             func=send_push_notification,
