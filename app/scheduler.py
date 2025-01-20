@@ -16,7 +16,7 @@ jobstores = {
 }
 
 scheduler = BackgroundScheduler(jobstores=jobstores)
-scheduler.add_jobstore("default")
+
 
 # Настройка логирования
 scheduler._logger = logging.getLogger("apscheduler")
