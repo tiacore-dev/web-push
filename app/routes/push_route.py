@@ -107,13 +107,6 @@ def schedule_notification():
             logger.error(f"Failed to send immediate notification: {str(e)}")
             return jsonify({"error": "Failed to send immediate notification"}), 500
 
-    logger.info("Попытка вызвать отправку пуша")
-    # try:
-    #    send_push_notification(subscription, message)
-    #    logger.info("Пуш отправлен успешно")
-    # except Exception as e:
-    #    logger.error(f"Failed to send immediate notification: {str(e)}")
-
     # Планирование задачи
     try:
 

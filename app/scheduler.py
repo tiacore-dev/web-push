@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from pytz import timezone
 # from pytz import timezone
-from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
+from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_MISSED
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -27,7 +27,7 @@ executors = {
 
 scheduler = BackgroundScheduler(
     jobstores=jobstores,
-    timezone=timezone("Europe/Moscow"),
+    # timezone=timezone("Europe/Moscow"),
     executors=executors,
     job_defaults={
         "misfire_grace_time": 300,
@@ -37,11 +37,15 @@ scheduler = BackgroundScheduler(
 
 def job_listener(event):
     if event.exception:
-        logger.error(f"Job {event.job_id} failed: {event.exception}")
+        logging.error(f"Job {event.job_id} failed: {event.exception}")
+    elif event.code == EVENT_JOB_MISSED:
+        logging.warning(f"Job {event.job_id} was missed.")
     else:
-        logger.info(f"Job {event.job_id} executed successfully.")
+        logging.info(f"""Job {event.job_id} executed successfully at {
+                     event.scheduled_run_time}.""")
 
 
-scheduler.add_listener(job_listener, EVENT_JOB_ERROR | EVENT_JOB_EXECUTED)
+scheduler.add_listener(job_listener, EVENT_JOB_EXECUTED |
+                       EVENT_JOB_ERROR | EVENT_JOB_MISSED)
 
 logger.info("Scheduler initialized with PostgreSQL-backed JobStore")
