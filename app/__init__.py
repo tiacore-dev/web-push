@@ -5,6 +5,10 @@ from app.routes import register_routes
 from logger import setup_logger
 
 
+def test_schedule():
+    logging.info("Test job executed!")
+
+
 def create_app():
     app = Flask(__name__)
 
@@ -16,7 +20,7 @@ def create_app():
     from pytz import timezone
     test_time = datetime.now(timezone("Europe/Moscow")) + timedelta(seconds=10)
     scheduler.add_job(
-        func=lambda: logging.info("Test job executed!"),
+        func=test_schedule,
         trigger="date",
         run_date=test_time
     )
