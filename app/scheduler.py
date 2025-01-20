@@ -12,7 +12,7 @@ DB_URL = os.getenv('DATABASE_URL')
 
 # Настройка APScheduler с использованием SQLAlchemyJobStore
 jobstores = {
-    "default": SQLAlchemyJobStore(url="postgresql+psycopg2://user:password@host:port/dbname")
+    "default": SQLAlchemyJobStore(url=DB_URL)
 }
 
 scheduler = BackgroundScheduler(jobstores=jobstores)
