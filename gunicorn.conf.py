@@ -13,8 +13,7 @@ timeout = 600
 loglevel = "debug"
 errorlog = "-"  # Логи ошибок выводятся в stderr
 accesslog = "-"  # Логи доступа выводятся в stdout
-capture_output = False
-# Перехватывать вывод stdout/stderr из приложения
+capture_output = True  # Перехватывать вывод stdout/stderr из приложения
 
 
 # Добавляем флаг для предзагрузки приложения
