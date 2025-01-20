@@ -36,7 +36,7 @@ def on_starting(server):
     logging.info("Scheduler started.")
 
     # Добавление тестовой задачи
-    test_time = datetime.now(timezone("Europe/Moscow")) + timedelta(seconds=30)
+    test_time = datetime.now(timezone("Europe/Moscow")) + timedelta(seconds=90)
     scheduler.add_job(
         func=test_schedule,
         trigger="date",
