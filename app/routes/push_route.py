@@ -48,6 +48,7 @@ def schedule_notification():
     subscription = data.get('subscription')
     message_data = data.get('data', {'text': 'Default Notification Message'})
     message = message_data.get('text')
+    logger.inf(f"Полученный текст сообщения: {message}")
     notification_time = data.get('date')
 
     if not (subscription and message):
