@@ -14,7 +14,7 @@ def create_app():
 
     logger = setup_logger()
 
-    scheduler.start()
+    # scheduler.start()
     logger.info("Scheduler started.")
     from datetime import datetime, timedelta
     from pytz import timezone

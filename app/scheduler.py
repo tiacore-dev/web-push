@@ -18,8 +18,7 @@ jobstores = {
 
 scheduler = BackgroundScheduler(
     # jobstores=jobstores, timezone=timezone("Europe/Moscow"))
-    # jobstores=jobstores
-)
+    jobstores=jobstores)
 
 
 def job_listener(event):
@@ -29,6 +28,6 @@ def job_listener(event):
         logging.info(f"Job {event.job_id} executed successfully.")
 
 
-scheduler.add_listener(job_listener, EVENT_JOB_ERROR | EVENT_JOB_EXECUTED)
+# scheduler.add_listener(job_listener, EVENT_JOB_ERROR | EVENT_JOB_EXECUTED)
 
 logging.info("Scheduler initialized with PostgreSQL-backed JobStore")

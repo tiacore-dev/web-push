@@ -1,5 +1,7 @@
 import os
+import logging
 from dotenv import load_dotenv
+from app.scheduler import scheduler
 
 load_dotenv()
 
@@ -18,3 +20,16 @@ capture_output = True  # Перехватывать вывод stdout/stderr и�
 
 # Добавляем флаг для предзагрузки приложения
 preload_app = True
+
+
+# Запуск `scheduler` только в мастере
+def on_starting(server):
+    logging.info("Starting Gunicorn, initializing scheduler...")
+    scheduler.start()
+    logging.info("Scheduler started.")
+
+# Логирование событий после запуска воркеров
+
+
+def post_fork(server, worker):
+    logging.info(f"Worker {worker.pid} booted.")
