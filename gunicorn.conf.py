@@ -1,9 +1,8 @@
 import os
 import logging
-from datetime import datetime, timedelta
-from pytz import timezone
+
 from dotenv import load_dotenv
-from app.scheduler import scheduler, test_schedule
+from app.scheduler import scheduler, add_test
 
 load_dotenv()
 
@@ -31,15 +30,7 @@ def on_starting(server):
     logging.info("Starting Gunicorn, initializing scheduler...")
     scheduler.start()
     logging.info("Scheduler started.")
-
-    # Добавление тестовой задачи
-    test_time = datetime.now(timezone("Europe/Moscow")) + timedelta(seconds=90)
-    scheduler.add_job(
-        func=test_schedule,
-        trigger="date",
-        run_date=test_time,
-    )
-    logging.info(f"Test job scheduled for {test_time}")
+    add_test()
 
 # Логирование событий после запуска воркеров
 
