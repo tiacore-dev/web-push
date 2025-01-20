@@ -17,7 +17,6 @@ jobstores = {
 
 scheduler = BackgroundScheduler(jobstores=jobstores)
 
-
 # Настройка логирования
 scheduler._logger = logging.getLogger("apscheduler")
 scheduler._logger.setLevel(logging.DEBUG)
@@ -31,6 +30,5 @@ def job_listener(event):
 
 
 scheduler.add_listener(job_listener, EVENT_JOB_ERROR | EVENT_JOB_EXECUTED)
-
 
 logging.info("Scheduler initialized with PostgreSQL-backed JobStore")
