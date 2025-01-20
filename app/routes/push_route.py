@@ -1,6 +1,7 @@
 from pywebpush import WebPushException
 import logging
 import json
+import hashlib
 import os
 from datetime import datetime
 import pytz
@@ -115,16 +116,20 @@ def schedule_notification():
 
     # Планирование задачи
     try:
+
+        # Генерация уникального ID через хеширование
+        # Последние 10 символов
+        short_endpoint = subscription['endpoint'][-10:]
+        job_id = f"push-{short_endpoint}-{notification_time.isoformat()}"
+
         scheduler.add_job(
             func=send_push_notification,
             trigger="date",
             run_date=notification_time,
             args=[subscription, message],
-            id=f"push-{subscription['endpoint']
-                       }-{notification_time.isoformat()}",
-            replace_existing=True,  # Заменяет задачу, если она уже существует
-            misfire_grace_time=300,  # Обработка пропущенных задач
-            max_instances=5,  # Позволяет запускать до 5 экземпляров задачи одновременно
+            id=job_id,
+            replace_existing=True,  # Обновляет существующую задачу с тем же ID
+            misfire_grace_time=300,
         )
         logger.info(f"""Notification scheduled successfully for {
             notification_time}""")
