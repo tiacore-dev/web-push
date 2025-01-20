@@ -1,8 +1,6 @@
 import logging
 import os
 from dotenv import load_dotenv
-from pytz import timezone
-# from pytz import timezone
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_MISSED
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -27,7 +25,6 @@ executors = {
 
 scheduler = BackgroundScheduler(
     jobstores=jobstores,
-    # timezone=timezone("Europe/Moscow"),
     executors=executors,
     job_defaults={
         "misfire_grace_time": 300,
