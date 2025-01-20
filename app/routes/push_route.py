@@ -18,6 +18,7 @@ logger = logging.getLogger('web_push')
 novosibirsk_tz = pytz.timezone("Asia/Novosibirsk")
 moscow_tz = pytz.timezone("Europe/Moscow")
 
+
 URL = os.getenv('URL')
 PRIVATE_KEY = os.getenv('PRIVATE_KEY')
 
@@ -26,7 +27,7 @@ def send_push_notification(subscription, message):
     """Отправка push-уведомления."""
     try:
         data = json.dumps(
-            {"title": "Scheduled Notification", "body": message})
+            {"title": "Scheduled Notification", "body": message}, ensure_ascii=False)
         logger.info(f"Полученные данные: {data}")
 
         webpush(

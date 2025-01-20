@@ -1,6 +1,7 @@
 import logging
 import os
 from dotenv import load_dotenv
+from pytz import timezone
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -15,11 +16,8 @@ jobstores = {
     "default": SQLAlchemyJobStore(url=DB_URL)
 }
 
-scheduler = BackgroundScheduler(jobstores=jobstores)
-
-# Настройка логирования
-scheduler._logger = logging.getLogger("apscheduler")
-scheduler._logger.setLevel(logging.DEBUG)
+scheduler = BackgroundScheduler(
+    jobstores=jobstores, timezone=timezone("Europe/Moscow"))
 
 
 def job_listener(event):
