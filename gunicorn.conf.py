@@ -14,3 +14,7 @@ loglevel = "debug"
 errorlog = "-"  # Логи ошибок выводятся в stderr
 accesslog = "-"  # Логи доступа выводятся в stdout
 capture_output = True  # Перехватывать вывод stdout/stderr из приложения
+
+
+# Добавляем флаг для предзагрузки приложения
+preload_app = True
