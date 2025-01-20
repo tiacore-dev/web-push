@@ -28,10 +28,8 @@ def send_push_notification(subscription, message):
     try:
         data = json.dumps(
             {
-                "notification": {
-                    "title": "Scheduled Notification",
-                    "body": message,
-                }
+                "title": "Scheduled Notification",
+                "body": message,
             },
             ensure_ascii=False
         )
