@@ -16,15 +16,6 @@ def create_app():
 
     # scheduler.start()
     logger.info("Scheduler started.")
-    from datetime import datetime, timedelta
-    from pytz import timezone
-    test_time = datetime.now(timezone("Europe/Moscow")) + timedelta(seconds=10)
-    scheduler.add_job(
-        func=test_schedule,
-        trigger="date",
-        run_date=test_time
-    )
-    logging.info(f"Test job scheduled for {test_time}")
 
     register_routes(app)
     logger.info("Routes registered")

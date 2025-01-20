@@ -1,5 +1,7 @@
 import os
 import logging
+from datetime import datetime, timedelta
+from pytz import timezone
 from dotenv import load_dotenv
 from app.scheduler import scheduler
 
@@ -22,11 +24,25 @@ capture_output = True  # Перехватывать вывод stdout/stderr и�
 preload_app = True
 
 
+def test_schedule():
+    logging.info("Test job executed!")
+
 # Запуск `scheduler` только в мастере
+
+
 def on_starting(server):
     logging.info("Starting Gunicorn, initializing scheduler...")
     scheduler.start()
     logging.info("Scheduler started.")
+
+    # Добавление тестовой задачи
+    test_time = datetime.now(timezone("Europe/Moscow")) + timedelta(seconds=30)
+    scheduler.add_job(
+        func=test_schedule,
+        trigger="date",
+        run_date=test_time,
+    )
+    logging.info(f"Test job scheduled for {test_time}")
 
 # Логирование событий после запуска воркеров
 
