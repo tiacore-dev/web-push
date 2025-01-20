@@ -2,6 +2,7 @@ import logging
 import json
 import os
 from datetime import datetime
+import pytz
 from dotenv import load_dotenv
 from flask import Blueprint, request, jsonify
 from pywebpush import webpush, WebPushException
@@ -10,6 +11,10 @@ from app.scheduler import scheduler
 push_bp = Blueprint('push', __name__)
 
 load_dotenv()
+
+# Часовые пояса
+novosibirsk_tz = pytz.timezone("Asia/Novosibirsk")
+moscow_tz = pytz.timezone("Europe/Moscow")
 
 URL = os.getenv('URL')
 PRIVATE_KEY = os.getenv('PRIVATE_KEY')
@@ -43,6 +48,22 @@ def schedule_notification():
     message = message_data.get('text')
     notification_time = data.get('date')
 
+    try:
+        # Парсинг даты и времени с клиентской стороны
+        notification_time = datetime.fromisoformat(notification_time)
+        notification_time = novosibirsk_tz.localize(
+            notification_time)  # Привязка к Новосибирскому времени
+        logging.info(f"""Notification time in Novosibirsk timezone: {
+                     notification_time}""")
+
+        # Преобразование в Московское время
+        notification_time = notification_time.astimezone(moscow_tz)
+        logging.info(f"""Converted notification time to Moscow timezone: {
+                     notification_time}""")
+    except ValueError:
+        logging.error(f"Invalid date format: {notification_time}")
+        return jsonify({"error": "Invalid date format. Use ISO format: YYYY-MM-DDTHH:MM:SS"}), 400
+
     if not (subscription and message):
         logging.warning("Missing required parameters")
         return jsonify({"error": "Missing required parameters"}), 400
@@ -50,15 +71,28 @@ def schedule_notification():
     if not notification_time:
         notification_time = datetime.now()
         logging.info(f"""No notification time provided. Using current time: {
-            notification_time}""")
+                     notification_time}""")
     else:
         try:
             notification_time = datetime.fromisoformat(notification_time)
             logging.info(f"""Notification time parsed successfully: {
-                notification_time}""")
+                         notification_time}""")
         except ValueError:
             logging.error(f"Invalid date format: {notification_time}")
             return jsonify({"error": "Invalid date format. Use ISO format: YYYY-MM-DDTHH:MM:SS"}), 400
+
+    # Проверка времени уведомления
+    current_time = datetime.now()
+    if notification_time < current_time:
+        logging.info(f"""Notification time {
+                     notification_time} is in the past. Sending push notification immediately.""")
+        try:
+            send_push_notification(subscription, message)
+            logging.info("Push notification sent successfully.")
+            return jsonify({"message": "Notification sent immediately as the scheduled time was in the past."}), 200
+        except Exception as e:
+            logging.error(f"Failed to send immediate notification: {str(e)}")
+            return jsonify({"error": "Failed to send immediate notification"}), 500
 
     try:
         scheduler.add_job(
@@ -68,7 +102,7 @@ def schedule_notification():
             args=[subscription, message]
         )
         logging.info(f"""Notification scheduled successfully for {
-            notification_time}""")
+                     notification_time}""")
     except Exception as e:
         logging.error(f"Failed to schedule notification: {str(e)}")
         return jsonify({"error": "Failed to schedule notification"}), 500
