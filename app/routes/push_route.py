@@ -79,13 +79,13 @@ def schedule_notification():
 
             # Установка Новосибирского времени
             notification_time = novosibirsk_tz.localize(notification_time)
-            logger.info(f"""Notification time in Novosibirsk timezone: {
-                        notification_time}""")
+            # logger.info(f"""Notification time in Novosibirsk timezone: {
+            # notification_time}""")
 
             # Конвертация в UTC
             notification_time_utc = notification_time.astimezone(pytz.UTC)
-            logger.info(f"""Converted notification time to UTC: {
-                        notification_time_utc}""")
+            # logger.info(f"""Converted notification time to UTC: {
+            # notification_time_utc}""")
         except ValueError:
             logger.error(f"Invalid date format: {notification_time}")
             return jsonify({"error": "Invalid date format. Use ISO format: YYYY-MM-DDTHH:MM:SS"}), 400
@@ -96,7 +96,7 @@ def schedule_notification():
 
     # Проверка: отправить уведомление сразу, если время в прошлом
     current_time_utc = datetime.now(pytz.UTC)
-    logging.info(f"Current UTC time: {current_time_utc}")
+    # logging.info(f"Current UTC time: {current_time_utc}")
 
     if notification_time_utc < current_time_utc:
         logger.info(
