@@ -1,7 +1,7 @@
 import logging
 import os
 from dotenv import load_dotenv
-from pytz import timezone
+# from pytz import timezone
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -17,7 +17,8 @@ jobstores = {
 }
 
 scheduler = BackgroundScheduler(
-    jobstores=jobstores, timezone=timezone("Europe/Moscow"))
+    # jobstores=jobstores, timezone=timezone("Europe/Moscow"))
+    jobstores=jobstores)
 
 
 def job_listener(event):
