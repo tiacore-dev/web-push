@@ -1,3 +1,4 @@
+from pywebpush import WebPushException
 import logging
 import json
 import os
@@ -24,18 +25,17 @@ PRIVATE_KEY = os.getenv('PRIVATE_KEY')
 
 
 def send_push_notification(subscription, message):
-    """Отправка push-уведомления."""
     try:
         data = json.dumps(
             {
                 "notification": {
                     "title": "Scheduled Notification",
-                    "body": message
+                    "body": message,
                 }
             },
             ensure_ascii=False
         )
-        logger.info(f"Полученные данные: {data}")
+        logger.info(f"Отправка данных: {data}")
 
         webpush(
             subscription_info=subscription,
@@ -43,11 +43,14 @@ def send_push_notification(subscription, message):
             vapid_private_key=PRIVATE_KEY,
             vapid_claims={"sub": URL}
         )
-        logger.info(f"""Notification sent successfully to {
-            subscription['endpoint']}""")
+        logger.info(f"Push успешно отправлен на {subscription['endpoint']}")
     except WebPushException as ex:
-        logger.error(f"""Failed to send push to {
-            subscription['endpoint']}: {str(ex)}""")
+        logger.error(f"""Ошибка отправки пуша на {
+                     subscription['endpoint']}: {str(ex)}""")
+        if ex.response and ex.response.json():
+            logger.error(f"Ответ сервера: {ex.response.json()}")
+    except Exception as e:
+        logger.error(f"Неизвестная ошибка при отправке пуша: {str(e)}")
 
 
 @ push_bp.route('/schedule_notification', methods=['POST'])
@@ -106,11 +109,11 @@ def schedule_notification():
             return jsonify({"error": "Failed to send immediate notification"}), 500
 
     logger.info("Попытка вызвать отправку пуша")
-    try:
-        send_push_notification(subscription, message)
-        logger.info("Пуш отправлен успешно")
-    except Exception as e:
-        logger.error(f"Failed to send immediate notification: {str(e)}")
+    # try:
+    #    send_push_notification(subscription, message)
+    #    logger.info("Пуш отправлен успешно")
+    # except Exception as e:
+    #    logger.error(f"Failed to send immediate notification: {str(e)}")
 
     # Планирование задачи
     try:
