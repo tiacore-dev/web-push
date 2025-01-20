@@ -124,6 +124,11 @@ def schedule_notification():
         )
         logger.info(f"""Notification scheduled successfully for {
                     notification_time_utc}""")
+        jobs = scheduler.get_jobs()
+        for job in jobs:
+            logger.info(f"""Job ID: {job.id}, Next run time: {
+                        job.next_run_time}""")
+
     except Exception as e:
         logger.error(f"Failed to schedule notification: {str(e)}")
         return jsonify({"error": "Failed to schedule notification"}), 500
