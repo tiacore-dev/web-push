@@ -26,20 +26,14 @@ URL = os.getenv('URL')
 PRIVATE_KEY = os.getenv('PRIVATE_KEY')
 
 
-def send_push_notification(subscription, message):
+def send_push_notification(subscription, message_data):
     try:
-        data = json.dumps(
-            {
-                "title": "Scheduled Notification",
-                "body": message,
-            },
-            ensure_ascii=False
-        )
-        logger.info(f"Отправка данных: {data}")
+
+        logger.info(f"Отправка данных: {message_data}")
 
         webpush(
             subscription_info=subscription,
-            data=data,
+            data=message_data,
             vapid_private_key=PRIVATE_KEY,
             vapid_claims={"sub": URL}
         )
@@ -60,12 +54,12 @@ def schedule_notification():
     logger.info(f"Received request data: {data}")
 
     subscription = data.get('subscription')
-    message_data = data.get('data', {'text': 'Default Notification Message'})
-    message = message_data.get('text')
-    logger.info(f"Полученный текст сообщения: {message}")
+    message_data = data.get('data')
+    # user_data = data.get('userId')
+    logger.info(f"Полученный текст сообщения: {message_data}")
     notification_time = data.get('date')
 
-    if not (subscription and message):
+    if not (subscription and message_data):
         logger.warning("Missing required parameters")
         return jsonify({"error": "Missing required parameters"}), 400
 
@@ -102,7 +96,7 @@ def schedule_notification():
         logger.info(
             "Notification time is in the past. Sending push notification immediately.")
         try:
-            send_push_notification(subscription, message)
+            send_push_notification(subscription, message_data)
             return jsonify({"message": "Notification sent immediately as the scheduled time was in the past."}), 200
         except Exception as e:
             logger.error(f"Failed to send immediate notification: {str(e)}")
@@ -117,7 +111,7 @@ def schedule_notification():
             func=send_push_notification,
             trigger="date",
             run_date=notification_time_utc,  # Используем UTC
-            args=[subscription, message],
+            args=[subscription, message_data],
             id=job_id,
             replace_existing=True,  # Обновляет существующую задачу с тем же ID
             misfire_grace_time=300,
