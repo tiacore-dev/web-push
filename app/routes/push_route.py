@@ -33,7 +33,7 @@ def send_push_notification(subscription, message_data):
 
         webpush(
             subscription_info=subscription,
-            data=message_data,
+            data=json.dumps(message_data),
             vapid_private_key=PRIVATE_KEY,
             vapid_claims={"sub": URL}
         )
