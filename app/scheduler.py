@@ -39,10 +39,10 @@ scheduler = BackgroundScheduler(
     },
 )
 
-scheduler.add_job(
+"""scheduler.add_job(
     debug_jobs,
     trigger=IntervalTrigger(seconds=30),  # Проверка каждые 30 секунд
-)
+)"""
 
 # Установим интервал проверки задач
 scheduler._jobstores["default"].max_interval = 5  # Проверять каждые 5 секунд
@@ -56,8 +56,8 @@ def event_listener(event):
     elif event.code == EVENT_JOB_EXECUTED:
         logger.info(f"Job {event.job_id} executed successfully.")
     elif event.code == EVENT_JOB_ERROR:
-        logger.error(f"Job {event.job_id} failed with exception: {
-                     event.exception}")
+        logger.error(f"""Job {event.job_id} failed with exception: {
+                     event.exception}""")
     elif event.code == EVENT_JOB_MISSED:
         logger.warning(f"Job {event.job_id} was missed.")
 

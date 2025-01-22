@@ -12,6 +12,7 @@ __pycache__/
 vapid_private_key.pem
 vapid_public_key.pem
 
+
 # Distribution / packaging
 .Python
 build/
