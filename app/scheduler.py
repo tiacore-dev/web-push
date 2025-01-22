@@ -48,7 +48,7 @@ scheduler = BackgroundScheduler(
 scheduler._jobstores["default"].max_interval = 5  # Проверять каждые 5 секунд
 
 
-def event_listener(event):
+"""def event_listener(event):
     if event.code == EVENT_JOB_ADDED:
         logger.info(f"Job {event.job_id} was added.")
     elif event.code == EVENT_JOB_REMOVED:
@@ -56,12 +56,12 @@ def event_listener(event):
     elif event.code == EVENT_JOB_EXECUTED:
         logger.info(f"Job {event.job_id} executed successfully.")
     elif event.code == EVENT_JOB_ERROR:
-        logger.error(f"""Job {event.job_id} failed with exception: {
-                     event.exception}""")
+        logger.error(f"Job {event.job_id} failed with exception: {
+                     event.exception}")
     elif event.code == EVENT_JOB_MISSED:
         logger.warning(f"Job {event.job_id} was missed.")
 
 
-scheduler.add_listener(event_listener, EVENT_ALL)
+scheduler.add_listener(event_listener, EVENT_ALL)"""
 
 logger.info("Scheduler initialized with PostgreSQL-backed JobStore")
