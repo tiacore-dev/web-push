@@ -20,4 +20,4 @@ jobs:
 
       - name: Deploy to Production
         if: github.ref_name == 'master'
-        run: ssh -o StrictHostKeyChecking=no -t ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} "cd apps/web-push && git pull origin master && docker compose down && docker compose up --build -d"
+        run: ssh -o StrictHostKeyChecking=no -t ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} "cd apps/web-push && git pull origin master && docker compose down web && docker compose up --build web -d"
