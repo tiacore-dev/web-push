@@ -1,63 +1,61 @@
-
-import logging
 import json
-from uuid import uuid4
+import logging
 import os
 from datetime import datetime
+from uuid import uuid4
+
 import pytz
 from dotenv import load_dotenv
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
+from pywebpush import WebPushException, webpush
 
-from pywebpush import webpush, WebPushException
 from app.scheduler import scheduler
 
-push_bp = Blueprint('push', __name__)
+push_bp = Blueprint("push", __name__)
 
 load_dotenv()
 
-logger = logging.getLogger('web_push')
+logger = logging.getLogger("web_push")
 
 # Часовые пояса
 novosibirsk_tz = pytz.timezone("Asia/Novosibirsk")
 moscow_tz = pytz.timezone("Europe/Moscow")
 
 
-URL = os.getenv('URL')
-PRIVATE_KEY = os.getenv('PRIVATE_KEY')
+URL = os.getenv("URL", "")
+PRIVATE_KEY = os.getenv("PRIVATE_KEY")
 
 
 def send_push_notification(subscription, message_data):
     try:
-
         logger.info(f"Отправка данных: {message_data}")
 
         webpush(
             subscription_info=subscription,
             data=json.dumps(message_data),
             vapid_private_key=PRIVATE_KEY,
-            vapid_claims={"sub": URL}
+            vapid_claims={"sub": URL},
         )
         logger.info(f"Push успешно отправлен на {subscription['endpoint']}")
     except WebPushException as ex:
-        logger.error(f"""Ошибка отправки пуша на {
-                     subscription['endpoint']}: {str(ex)}""")
+        logger.error(f"""Ошибка отправки пуша на {subscription["endpoint"]}: {str(ex)}""")
         if ex.response and ex.response.json():
             logger.error(f"Ответ сервера: {ex.response.json()}")
     except Exception as e:
         logger.error(f"Неизвестная ошибка при отправке пуша: {str(e)}")
 
 
-@push_bp.route('/schedule_notification', methods=['POST'])
+@push_bp.route("/schedule_notification", methods=["POST"])
 def schedule_notification():
     """Эндпоинт для планирования push-уведомлений."""
     data = request.json
     logger.info(f"Received request data: {data}")
 
-    subscription = data.get('subscription')
-    message_data = data.get('data')
+    subscription = data.get("subscription")
+    message_data = data.get("data")
     # user_data = data.get('userId')
     logger.info(f"Полученный текст сообщения: {message_data}")
-    notification_time = data.get('date')
+    notification_time = data.get("date")
 
     if not (subscription and message_data):
         logger.warning("Missing required parameters")
@@ -84,8 +82,7 @@ def schedule_notification():
             logger.error(f"Invalid date format: {notification_time}")
             return jsonify({"error": "Invalid date format. Use ISO format: YYYY-MM-DDTHH:MM:SS"}), 400
     else:
-        logger.error(f"""Invalid type for notification_time: {
-                     type(notification_time)}""")
+        logger.error(f"""Invalid type for notification_time: {type(notification_time)}""")
         return jsonify({"error": "Invalid notification_time format. Must be ISO string"}), 400
 
     # Проверка: отправить уведомление сразу, если время в прошлом
@@ -93,8 +90,7 @@ def schedule_notification():
     # logging.info(f"Current UTC time: {current_time_utc}")
 
     if notification_time_utc < current_time_utc:
-        logger.info(
-            "Notification time is in the past. Sending push notification immediately.")
+        logger.info("Notification time is in the past. Sending push notification immediately.")
         try:
             send_push_notification(subscription, message_data)
             return jsonify({"message": "Notification sent immediately as the scheduled time was in the past."}), 200
@@ -116,12 +112,10 @@ def schedule_notification():
             replace_existing=True,  # Обновляет существующую задачу с тем же ID
             misfire_grace_time=300,
         )
-        logger.info(f"""Notification scheduled successfully for {
-                    notification_time_utc}""")
+        logger.info(f"""Notification scheduled successfully for {notification_time_utc}""")
         jobs = scheduler.get_jobs()
         for job in jobs:
-            logger.info(f"""Job ID: {job.id}, Next run time: {
-                        job.next_run_time}""")
+            logger.info(f"""Job ID: {job.id}, Next run time: {job.next_run_time}""")
 
     except Exception as e:
         logger.error(f"Failed to schedule notification: {str(e)}")
