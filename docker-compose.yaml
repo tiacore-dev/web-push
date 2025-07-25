@@ -26,6 +26,8 @@ services:
       - push_network
 
 
+volumes:
+  pgdata:
 
 networks:
   push_network:
